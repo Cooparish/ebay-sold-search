@@ -200,10 +200,39 @@
             padding: 1rem;
         }
 
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.65rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
         .results-label {
             font-size: 0.8rem;
             color: #888;
-            margin-bottom: 0.65rem;
+        }
+
+        .ebay-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #0064d2;
+            text-decoration: none;
+            background: white;
+            border: 1.5px solid #0064d2;
+            border-radius: 20px;
+            padding: 0.3rem 0.75rem;
+            white-space: nowrap;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .ebay-link:hover {
+            background: #0064d2;
+            color: white;
         }
 
         .setup-notice {
@@ -301,7 +330,7 @@
             const s = document.getElementById('ebay-jsonp');
             if (s) s.remove();
             document.getElementById('searchBtn').disabled = false;
-            handleResults(data);
+            handleResults(data, query, usedOnly);
         };
 
         const usedOnly = document.getElementById('usedOnly').checked;
@@ -340,7 +369,19 @@
         document.head.appendChild(script);
     }
 
-    function handleResults(data) {
+    function buildEbayUrl(query, usedOnly) {
+        const params = new URLSearchParams({
+            '_nkw':        query,
+            'LH_Sold':     '1',
+            'LH_Complete': '1',
+        });
+        if (usedOnly) {
+            params.set('LH_ItemCondition', '3000|4000|5000|6000|7000');
+        }
+        return 'https://www.ebay.com/sch/i.html?' + params.toString();
+    }
+
+    function handleResults(data, query, usedOnly) {
         const container = document.getElementById('resultsContainer');
         try {
             const resp = data.findCompletedItemsResponse[0];
@@ -396,8 +437,13 @@
                 </a>
             `).join('');
 
+            const ebayUrl = buildEbayUrl(query, usedOnly);
+
             container.innerHTML =
-                `<div class="results-label">Showing ${listings.length} most recent sold listings, sorted by recency</div>` + cards;
+                `<div class="results-header">
+                    <div class="results-label">Showing ${listings.length} most recent sold listings, sorted by recency</div>
+                    <a href="${ebayUrl}" target="_blank" rel="noopener" class="ebay-link">🔍 View on eBay</a>
+                </div>` + cards;
 
         } catch (e) {
             container.innerHTML = '<div class="message error">Unexpected error parsing results. Open the browser console for details.</div>';
