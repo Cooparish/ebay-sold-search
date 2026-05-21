@@ -34,18 +34,42 @@
             margin: 0 auto 0.75rem;
         }
 
+        .input-wrap {
+            flex: 1;
+            position: relative;
+            display: flex;
+        }
+
         .search-bar input {
             flex: 1;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem 2.25rem 0.75rem 1rem;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
             outline: none;
+            width: 100%;
         }
 
         .search-bar input:focus {
             box-shadow: 0 0 0 3px rgba(255,255,255,0.4);
         }
+
+        .clear-btn {
+            position: absolute;
+            right: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 0.2rem;
+            display: none;
+        }
+
+        .clear-btn:hover { color: #555; }
 
         .filter-bar {
             display: flex;
@@ -228,7 +252,10 @@
 <header>
     <h1>eBay Search Launcher</h1>
     <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="e.g. Scotch M920 Tape Dispenser" autocomplete="off" />
+        <div class="input-wrap">
+            <input type="text" id="searchInput" placeholder="e.g. proxxon tablesaw" autocomplete="off" />
+            <button class="clear-btn" id="clearBtn" onclick="clearSearch()" tabindex="-1">✕</button>
+        </div>
     </div>
     <div class="filter-bar">
         <label>
@@ -250,9 +277,22 @@
     const RECENT_KEY = 'ebay_recent_searches';
     const MAX_RECENT = 10;
 
-    document.getElementById('searchInput').addEventListener('keydown', e => {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn    = document.getElementById('clearBtn');
+
+    searchInput.addEventListener('keydown', e => {
         if (e.key === 'Enter') launch('sold');
     });
+
+    searchInput.addEventListener('input', () => {
+        clearBtn.style.display = searchInput.value ? 'block' : 'none';
+    });
+
+    function clearSearch() {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        searchInput.focus();
+    }
 
     function buildUrl(query, mode, usedOnly) {
         const params = new URLSearchParams({ '_nkw': query });
